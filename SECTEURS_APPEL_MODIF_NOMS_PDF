@@ -1,0 +1,43 @@
+# Pour renommer les pdf en sortie avec le nom du centre (2 secondes de traitement)
+
+## Import des modules utilisés
+import arcpy
+import os
+from os import listdir
+from os.path import isfile, join
+import unicodedata
+
+## Code pour supprimer les caractères accentués
+def strip_accents(s):
+   return ''.join(c for c in unicodedata.normalize('NFD', s)
+                  if unicodedata.category(c) != 'Mn')
+
+## Données en entrée
+dossier_pdf = "" # à modifier !!!
+table_cis = ""
+liste_fichiers = [f for f in listdir(dossier_pdf) if isfile(join(dossier_pdf, f))]
+liste_fichiers.remove('desktop.ini')
+
+## Création d'un dictionnaire vide pour stocker les valeurs de la table
+id_cis = {}
+
+## Ajout des valeurs de la table dans le dictionnaire
+with arcpy.da.SearchCursor(table_cis, ["ID_CIS", "CIS"]) as cursor :
+    for row in cursor :
+        id_cis[row[0]] = strip_accents(row[1].upper())
+        
+## Renommer les fichiers pdf grâce au dictionnaire
+for fichier in liste_fichiers :
+    x = fichier.split("_")
+    if "APPEL_1_A_" in fichier :
+        i = 6
+    elif "APPEL_1_A_" not in fichier and "APPEL_1_" in fichier:
+        i = 4
+    partie1 = x[0:i]
+    partie1 = "_".join(partie1)
+    partie2 = x[i:]
+    partie2 = "".join(partie2)
+    partie2 = partie2.replace(".pdf", "")
+    nom_cis = id_cis[int(partie2)]
+    nom_final = partie1 + "_" + nom_cis + ".pdf"
+    os.rename(dossier_pdf + fichier, dossier_pdf + nom_final)
