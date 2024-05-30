@@ -1,0 +1,25 @@
+import getpass
+from arcgis.gis import admin
+from arcgis.gis import GIS
+print("Import des modules OK")
+
+# Compléter les infos de connexion au portail :
+username = ""
+password = ""
+portal_url = ""
+
+gis = GIS(portal_url, username, password)
+gis_servers = gis.admin.servers.list()
+
+server_carto = gis_servers[0]
+
+carto_folders = gis_servers[0].services.folders
+print(carto_folders)
+
+# Démarrer tous les services
+for service in server_carto.services.list() :
+	service.start()
+for dossier in carto_folders :
+	for service in server_carto.services.list(folder=dossier) :
+		service.start()
+print("Fini")
