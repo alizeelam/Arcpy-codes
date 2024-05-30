@@ -1,0 +1,43 @@
+## Modifier le nom du fichier ici avec la date du jour :
+chemin_sauvegarde = r''
+
+import getpass
+from arcgis.gis import admin
+from arcgis.gis import GIS
+import xlwt
+print("Import des modules OK")
+
+# Ajouter les informations de connexion au portail :
+username = ""
+password = ""
+portal_url = ""
+
+gis = GIS(portal_url, username, password)
+
+# Lister les membres du Portal et récupérer leurs informations
+membres_portal = gis.users.search(max_users=1000)
+liste_tableau = []
+liste_tableau.append(["ID", "Mail", "Prénom", "Nom", "Groupes", "Nom des groupes"])
+for membre in membres_portal :
+    noms_groupes = ""
+    liste_groupes = []
+    for groupe in membre.groups :
+        liste_groupes.append(groupe.title)
+    liste_groupes.sort()
+    noms_groupes = ", ".join(liste_groupes)
+    liste_tableau.append([membre.username, membre.email, membre.firstName, membre.lastName, len(membre.groups), noms_groupes])
+    
+print("Liste des membres OK")
+# Partie Excel
+classeur = xlwt.Workbook()
+feuille = classeur.add_sheet('Membres')
+x = 0
+y = 0
+for ligne in liste_tableau :
+    for l in ligne :
+        feuille.write(x, y, l)
+        y = y + 1
+    y = 0
+    x = x + 1
+classeur.save(chemin_sauvegarde)
+print("Classeur Excel OK")
