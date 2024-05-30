@@ -1,0 +1,60 @@
+# Import des modules utiles - Environ 5 minutes de traitement à prévoir
+import arcpy
+from arcpy import env
+
+# Définition de l'environnement de travail, des dossiers et classes d'entités utilisés
+dossier = ""
+nom_generique = "SECTEURS_1_A_"
+arcpy.env.workspace = dossier
+arcpy.env.overwriteOutput = True
+
+cis = ""
+secteurs_gdb = ""
+nom_secteur = "CARTOADMIN.SECTEUR_RANG_0"
+liste_secteurs = []
+secteur1 = secteurs_gdb + nom_secteur + str(1)
+
+# Début du traitement
+x = 2
+
+while x <= 10 :
+    a_creer = nom_generique + str(x)
+    fusion = a_creer + "_FUSION"
+    if arcpy.Exists(fusion) :
+        arcpy.management.Delete(fusion)
+
+    if x == 10 :
+        existant = secteurs_gdb + "CARTOADMIN.SECTEUR_RANG_10"
+    else :
+        existant = secteurs_gdb + nom_secteur + str(x)
+
+    ## Création de la classe d'entités SECTEURS_1_A_X
+    arcpy.conversion.ExportFeatures(secteur1, a_creer)
+    ## Suppression des champs inutiles
+    arcpy.management.DeleteField(a_creer, ["FK_CIS"], "KEEP_FIELDS")
+    ## Modification de l'alias du champ FK_CIS
+    arcpy.management.AlterField(a_creer, "FK_CIS", new_field_alias = "CIS")
+
+    if x == 10 :
+        liste_secteurs.append(secteurs_gdb + "CARTOADMIN.SECTEUR_RANG_10")
+    else :
+        liste_secteurs.append(secteurs_gdb + nom_secteur + str(x))
+
+    for secteur in liste_secteurs :
+        ## Ajout des données du secteur en plus (de 2 à X)
+        arcpy.management.Append(secteur, a_creer, "NO_TEST")
+
+    ## Fusion sur le champ FK_CIS
+    arcpy.management.Dissolve(a_creer, fusion, "FK_CIS")
+    ## Gestion des champs de la table créée
+    arcpy.management.AddField(fusion, "NOM_CIS", "TEXT", field_alias="Nom du CIS")
+    arcpy.management.AddField(fusion, "TYPE_CIS", "TEXT", field_alias="Type du CIS")
+    arcpy.management.AddJoin(fusion, "FK_CIS", cis, "ID_BD")
+    arcpy.management.CalculateField(fusion, "NOM_CIS", '!CARTOADMIN.CASERNE_P.NOM_MIN!')
+    arcpy.management.CalculateField(fusion, "TYPE_CIS", '!CARTOADMIN.CASERNE_P.TYPE!')
+    arcpy.management.RemoveJoin(fusion)
+
+    arcpy.management.Delete(a_creer)
+
+    x = x + 1
+    # Et on continue la boucle jusqu'à x = 10
