@@ -1,0 +1,31 @@
+import getpass
+from arcgis.gis import admin
+from arcgis.gis import GIS
+print("Import des modules OK")
+
+# Compléter les infos de connexion au portail :
+username = ""
+password = ""
+portal_url = ""
+
+gis = GIS(portal_url, username, password)
+gis_servers = gis.admin.servers.list()
+
+server_carto = gis_servers[0]
+
+carto_folders = gis_servers[0].services.folders
+print(carto_folders)
+
+# Arrêter
+# Copier les noms des dossiers entre les crochets (entre guillemets) :
+carto_folders = gis_servers[0].services.folders
+folders_to_remove = [,]
+for dossier in folders_to_remove :
+	carto_folders.remove(dossier)
+
+for service in server_carto.services.list() :
+	service.stop()
+for dossier in carto_folders :
+	for service in server_carto.services.list(folder=dossier) :
+		service.stop()
+print("Fini")
