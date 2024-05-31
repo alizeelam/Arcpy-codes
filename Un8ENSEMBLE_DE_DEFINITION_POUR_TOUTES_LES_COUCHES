@@ -1,0 +1,13 @@
+# Définir un ensemble de définition NUM_ETAPE = 7 pour toutes les couches de la carte CRITERIUM_ETAPE_07
+aprx = arcpy.mp.ArcGISProject("CURRENT")
+m = aprx.listMaps("CRITERIUM_ETAPE_07")[0]
+for lyr in m.listLayers():
+    if lyr.supports("DEFINITIONQUERY"):
+        lyr.definitionQuery = "NUM_ETAPE= 7"
+
+# Définir un ensemble de définition NUM_ETAPE = 8 pour toutes les couches de la carte CRITERIUM_ETAPE_08
+aprx = arcpy.mp.ArcGISProject("CURRENT")
+m = aprx.listMaps("CRITERIUM_ETAPE_08")[0]
+for lyr in m.listLayers():
+    if lyr.supports("DEFINITIONQUERY"):
+        lyr.definitionQuery = "NUM_ETAPE= 8"
